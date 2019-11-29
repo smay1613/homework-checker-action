@@ -24,3 +24,11 @@ if [[ "$COLUMN_NAME" != "Ready to test" ]]; then
 fi
 
 echo "Performing checkup:"
+PULLS_URL=$(jq -r '.repository.pulls_url' "$GITHUB_EVENT_PATH")
+PULLS_URL=${PULLS_URL%\{/number\}}
+
+echo "Pulls url: $PULLS_URL"
+curl -s -S -H "Authorization: token $GITHUB_TOKEN" -H "Accept: application/vnd.github+json $PULLS?state=open" $PULLS_URL > pulls.json
+
+echo "Pulls info:"
+cat pulls.json
