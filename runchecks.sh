@@ -24,11 +24,31 @@ if [[ "$COLUMN_NAME" != "Ready to test" ]]; then
 fi
 
 echo "Performing checkup:"
-PULLS_URL=$(jq -r '.repository.pulls_url' "$GITHUB_EVENT_PATH")
-PULLS_URL=${PULLS_URL%\{/number\}}
+PULLS_ROOT_URL=$(jq -r '.repository.pulls_url' "$GITHUB_EVENT_PATH")
+PULLS_ROOT_URL=${PULLS_ROOT_URL%\{/number\}}
 
-echo "Pulls url: $PULLS_URL"
-curl -s -S -H "Authorization: token $GITHUB_TOKEN" -H "Accept: application/vnd.github+json $PULLS?state=open" $PULLS_URL > pulls.json
+echo "Pulls url: $PULLS_ROOT_URL"
+curl -s -S -H "Authorization: token $GITHUB_TOKEN" -H "Accept: application/vnd.github+json $PULLS?state=open" $PULLS_ROOT_URL > pulls_data.json
 
 echo "Pulls info:"
-cat pulls.json
+cat pulls_data.json
+
+CARD_NOTE=$(jq -r '.project_card.note' "$GITHUB_EVENT_PATH")
+TASK_NUMBER=$(echo $CARD_NOTE | grep -oPe "(task.|lab.)\K\d+")
+CARD_ID=$(jq -r '.project_card.id' "$GITHUB_EVENT_PATH")
+
+echo -e "Task number = $TASK_NUMBER;\nCard note: $CARD_NOTE;\nCard id: $CARD_ID\n"
+
+jq -r ".[] | select (.title | contains(\"$CARD_ID\")) | .url" pulls_data.json > pulls
+
+echo "Pulls to be checked:"
+cat pulls
+
+function processPullRequest() {
+  PR_ID=$(echo $1 | grep -oP -e '\d.$')
+  echo "Processing pull request with id $PR_ID"
+}
+
+< pulls | while read pr_link; do
+  processPullRequest pr_link
+done
