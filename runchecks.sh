@@ -44,11 +44,19 @@ jq -r ".[] | select (.title | contains(\"$CARD_ID\")) | .url" pulls_data.json > 
 echo "Pulls to be checked:"
 cat pulls
 
+REPO_URL=$(jq -r '.repository.url' "$GITHUB_EVENT_PATH")
+echo "Repo URL: $REPO_URL"
+
 function processPullRequest() {
   PR_ID=$(echo $1 | grep -oP -e '\d.$')
   echo "Processing pull request with id $PR_ID"
+  ARCHIVE_URL="$REPO_URL/zipball/pull/$PR_ID/head"
+  curl -s -L $ARCHIVE_URL --output "$PR_ID.zip" && echo "Downloaded successfully" || (echo "Cannot download!" && exit 1)
+  unzip $PR_ID.zip > $PR_ID
+  cd $PR_ID && ls | xargs cd
+  ls
 }
 
-< pulls | while read pr_link; do
-  processPullRequest pr_link
+cat pulls | while read pr_link; do
+  processPullRequest $pr_link
 done
