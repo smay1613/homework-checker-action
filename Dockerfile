@@ -10,7 +10,7 @@ LABEL maintainer="smay1613 <dimaafa0@gmail.com>"
 
 WORKDIR /build
 RUN apt-get update
-RUN apt-get -qq -y install curl jq
+RUN apt-get -qq -y install curl jq cmake g++
 
 ADD runchecks.sh /runchecks.sh
 COPY . .
