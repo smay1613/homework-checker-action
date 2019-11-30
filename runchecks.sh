@@ -51,8 +51,10 @@ REPO_URL=$(jq -r '.repository.url' "$GITHUB_EVENT_PATH")
 
 debug $(echo "Repo URL: $REPO_URL")
 
-debug $(echo "WORKSPACE: $GITHUB_WORKSPACE")
-debug $(ls $GITHUB_WORKSPACE/)
+TESTS_DIR="$GITHUB_WORKSPACE/tests"
+LAB_TESTS_DIR="$TESTS_DIR/Lab$TASK_NUMBER"
+debug $(echo "Tests dir: $TESTS_DIR" && ls $TESTS_DIR)
+debug $(echo "Lab dir: $LAB_TESTS_DIR" && ls $LAB_TESTS_DIR)
 
 function processPullRequest() {
   PR_ID=$(echo $1 | grep -oP -e '\d.$')
@@ -60,10 +62,15 @@ function processPullRequest() {
   ARCHIVE_URL="$REPO_URL/zipball/pull/$PR_ID/head"
   curl -s -L $ARCHIVE_URL --output "$PR_ID.zip" && debug $(echo "Downloaded successfully") || (echo "Cannot download!" && exit 1)
   unzip $PR_ID.zip -d $PR_ID
-  cd $(ls)
+  cd $PR_ID && cd $(ls)
   debug $(ls)
+  mv -f src $LAB_TESTS_DIR
+  mv -f include $LAB_TESTS_DIR
+  ./$TESTS_DIR/run-tests.sh $TASK_NUMBER
+  cd $GITHUB_WORKSPACE
 }
 
+cd $GITHUB_WORKSPACE
 cat pulls | while read pr_link; do
   processPullRequest $pr_link
 done
