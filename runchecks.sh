@@ -6,7 +6,7 @@ fi
 
 function debug() {
   if [[ -n "$DEBUG" ]]; then
-     echo "[DEBUG] $1"
+     echo "[DEBUG] $*"
   fi
 }
 
