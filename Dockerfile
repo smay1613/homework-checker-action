@@ -8,9 +8,8 @@ LABEL com.github.actions.color="gray-dark"
 LABEL repository="https://github.com/smay1613/homework-checker-action"
 LABEL maintainer="smay1613 <dimaafa0@gmail.com>"
 
-WORKDIR /build
 RUN apt-get update
-RUN apt-get -qq -y install curl jq cmake g++
+RUN apt-get -qq -y install curl jq cmake g++ zip unzip
 
 ADD runchecks.sh /runchecks.sh
 COPY . .

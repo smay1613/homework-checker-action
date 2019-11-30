@@ -57,16 +57,17 @@ debug $(echo "Tests dir: $TESTS_DIR" && ls $TESTS_DIR)
 debug $(echo "Lab dir: $LAB_TESTS_DIR" && ls $LAB_TESTS_DIR)
 
 function processPullRequest() {
-  PR_ID=$(echo $1 | grep -oP -e '\d.$')
+  PR_ID=$(echo $1 | grep -oP -e 'pulls\/\K\d+$')
   debug $(echo "Processing pull request with id $PR_ID")
   ARCHIVE_URL="$REPO_URL/zipball/pull/$PR_ID/head"
   curl -s -L $ARCHIVE_URL --output "$PR_ID.zip" && debug $(echo "Downloaded successfully") || (echo "Cannot download!" && exit 1)
   unzip $PR_ID.zip -d $PR_ID
   cd $PR_ID && cd $(ls)
   debug $(ls)
-  mv -f src $LAB_TESTS_DIR
-  mv -f include $LAB_TESTS_DIR
-  ./$TESTS_DIR/run-tests.sh $TASK_NUMBER
+  cp -l CMakeLists.txt $LAB_TESTS_DIR
+  cp -rl src $LAB_TESTS_DIR
+  cp -rl include $LAB_TESTS_DIR
+  bash $TESTS_DIR/run-tests.sh $TASK_NUMBER $1 && echo "Success!" || echo "[CRITICAL] FAIL!" #TODO: Post comment with a failure
   cd $GITHUB_WORKSPACE
 }
 
