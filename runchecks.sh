@@ -51,12 +51,8 @@ REPO_URL=$(jq -r '.repository.url' "$GITHUB_EVENT_PATH")
 
 debug $(echo "Repo URL: $REPO_URL")
 
-TESTS_URL="https://github.com/smay1613/Luxoft-Training-Center-CPP-003-Tests/archive/master.zip"
-curl -u $ACCESS_TOKEN -s -L $TESTS_URL --output tests.zip
-unzip tests.zip -d tests
-TESTS_DIR="$PWD/tests"
-
-debug $(ls tests)
+debug $(echo "WORKSPACE: $GITHUB_WORKSPACE")
+debug $(ls $GITHUB_WORKSPACE/)
 
 function processPullRequest() {
   PR_ID=$(echo $1 | grep -oP -e '\d.$')
