@@ -9,7 +9,7 @@ LABEL repository="https://github.com/smay1613/homework-checker-action"
 LABEL maintainer="smay1613 <dimaafa0@gmail.com>"
 
 RUN apt-get update
-RUN apt-get -qq -y install curl jq cmake g++ zip unzip
+RUN apt-get -qq -y install curl jq cmake g++ zip unzip wget
 
 ADD runchecks.sh /runchecks.sh
 COPY . .
