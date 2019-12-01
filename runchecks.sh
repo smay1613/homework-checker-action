@@ -56,6 +56,17 @@ LAB_TESTS_DIR="$TESTS_DIR/Lab$TASK_NUMBER"
 debug $(echo "Tests dir: $TESTS_DIR" && ls $TESTS_DIR)
 debug $(echo "Lab dir: $LAB_TESTS_DIR" && ls $LAB_TESTS_DIR)
 
+function prepareRepo() {
+  rm -r $1/src  
+  rm -r $1/include
+  rm $1/CMakeLists.txt
+  cp -l CMakeLists.txt $1
+  cp -rl src $1
+  cp -rl include $1
+}
+
+chmod +x $TESTS_DIR/run-tests.sh
+
 function processPullRequest() {
   PR_ID=$(echo $1 | grep -oP -e 'pulls\/\K\d+$')
   debug $(echo "Processing pull request with id $PR_ID")
@@ -64,10 +75,10 @@ function processPullRequest() {
   unzip $PR_ID.zip -d $PR_ID
   cd $PR_ID && cd $(ls)
   debug $(ls)
-  cp -l CMakeLists.txt $LAB_TESTS_DIR
-  cp -rl src $LAB_TESTS_DIR
-  cp -rl include $LAB_TESTS_DIR
-  bash $TESTS_DIR/run-tests.sh $TASK_NUMBER $1 && echo "Success!" || echo "[CRITICAL] FAIL!" #TODO: Post comment with a failure
+  prepareRepo $LAB_TESTS_DIR
+  export COMMENTS_URL="${1/pulls/issues}/comments"
+  cd $LAB_TESTS_DIR
+  bash $TESTS_DIR/run-tests.sh $TASK_NUMBER && echo "Success!" || echo "[CRITICAL] FAIL!" #TODO: Post comment with a failure
   cd $GITHUB_WORKSPACE
 }
 
